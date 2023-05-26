@@ -8,7 +8,7 @@ resource "aws_vpc" "main" {
 }
 
 ##VPC Peering connection
-resource "aws_vpc_peering_connection" "foo" {
+resource "aws_vpc_peering_connection" "peering" {
   peer_owner_id = data.aws_caller_identity.account.account_id
   peer_vpc_id   = var.default_vpc_id
   vpc_id        = aws_vpc.main.id
@@ -69,6 +69,11 @@ resource "aws_route_table" "public-route-table" {
     gateway_id = aws_internet_gateway.igw.id
   }
 
+  route {
+    cidr_block = data.aws_vpc.default_vpc.cidr_block
+    vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
+  }
+
   for_each        = var.public_subnets
   tags       = merge(
     var.tags,
@@ -107,6 +112,12 @@ resource "aws_route_table" "private-route-table" {
     cidr_block      = "0.0.0.0/0"
     nat_gateway_id  = aws_nat_gateway.nat-gateways["public-${split("-",each.value["name"])[1]}"].id
   }
+
+  route {
+    cidr_block = data.aws_vpc.default_vpc.cidr_block
+    vpc_peering_connection_id = aws_vpc_peering_connection.peering.id
+  }
+  
   tags       = merge(
     var.tags,
     { Name = "${var.env}-${each.value["name"]}" }
