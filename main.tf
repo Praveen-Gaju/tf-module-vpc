@@ -29,7 +29,13 @@ resource "aws_route_table" "public-route-table" {
     var.tags,
     { Name = "${var.env}-${each.value["name"]}" }
   )
+}
 
+##Route table association
+resource "aws_route_table_association" "public-association" {
+  for_each       = var.public_subnets
+  subnet_id      = lookup(lookup(aws_subnet.public_subnets, each.value["name"], null), "id",null)
+  route_table_id = aws_route_table.public-route-table[each.value["name"]].id
 }
 
 
