@@ -45,7 +45,7 @@ resource "aws_internet_gateway" "igw" {
 ##Elastic IP
 resource "aws_eip" "eip" {
   for_each  = var.public_subnets
-  vpc       = "true"
+  vpc       = true
 }
 
 ##NAT gateway
